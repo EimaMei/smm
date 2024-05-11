@@ -1,5 +1,3 @@
-#include <sili.h>
-
 /*
  * SPECIFICATION:
  * Description:
@@ -58,6 +56,14 @@
  *
  *
 */
+
+#ifndef SILIFIG_INCLUDE_SILIFIG_H
+#define SILIFIG_INCLUDE_SILIFIG_H
+
+
+#if !defined(SI_INCLUDE_SI_H)
+	#error "sili.h must be included to use this library."
+#endif
 
 typedef struct {
     u8 version;
@@ -151,12 +157,13 @@ usize silifig_configMakeEx(u32 version, u32 amount, siConfigOptions options,
 				memcpy(&buf[offset], entry.value, entry.len);
 				offset += entry.len;
 
+				si_printf("%i\n", entry.len);
 				dataSize += entry.len;
 			}
 		}
 	}
 	siConfigHeader* header = (siConfigHeader*)outBuffer;
-	header->dataSize = dataSize;
+	header->dataSize = si_swap64le(dataSize);
 
     return offset;
 }
@@ -221,6 +228,6 @@ siConfigCategory* silifig_categoryRead(const rawptr content, usize index) {
 rawptr silifig_entryGetData(siConfigEntry* entry) {
 	return &entry->len + 1;
 }
-
-
 #endif
+
+#endif /* SILIFIG_INCLUDE_SILIFIG_H */

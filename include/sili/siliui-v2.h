@@ -54,27 +54,29 @@ WARNING
 #ifndef SIUI_INCLUDE_SIUI_H
 #define SIUI_INCLUDE_SIUI_H
 
-#include <sili.h>
-#include <siliapp.h>
+
+#if !defined(SIAPP_INCLUDE_SIAPP_H)
+	#error "siliapp.h must be included to use this library."
+#endif
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
 typedef SI_ENUM(u32, siAlignment)  {
-    SI_ALIGNMENT_LEFT  = SI_BIT(0),
-    SI_ALIGNMENT_CENTER = SI_BIT(1),
-    SI_ALIGNMENT_RIGHT = SI_BIT(2),
+    SI_ALIGNMENT_LEFT	            = SI_BIT(0),
+    SI_ALIGNMENT_CENTER             = SI_BIT(1),
+    SI_ALIGNMENT_RIGHT              = SI_BIT(2),
 
-    SI_ALIGNMENT_UP = SI_BIT(3),
-    SI_ALIGNMENT_MIDDLE = SI_BIT(4),
-    SI_ALIGNMENT_DOWN = SI_BIT(5),
+    SI_ALIGNMENT_TOP                = SI_BIT(3),
+    SI_ALIGNMENT_MIDDLE             = SI_BIT(4),
+    SI_ALIGNMENT_BOTTOM             = SI_BIT(5),
 
-    SI_ALIGNMENT_DEFAULT = SI_ALIGNMENT_CENTER | SI_ALIGNMENT_MIDDLE,
+    SI_ALIGNMENT_DEFAULT            = SI_ALIGNMENT_CENTER | SI_ALIGNMENT_MIDDLE,
 
-    SI_ALIGNMENT_BITS_HORIZONTAL = SI_ALIGNMENT_LEFT | SI_ALIGNMENT_CENTER | SI_ALIGNMENT_RIGHT,
-    SI_ALIGNMENT_BITS_VERTICAL = SI_ALIGNMENT_UP | SI_ALIGNMENT_MIDDLE | SI_ALIGNMENT_DOWN,
-    SI_ALIGNMENT_BITS_ALL = SI_ALIGNMENT_BITS_VERTICAL | SI_ALIGNMENT_BITS_HORIZONTAL
+    SI_ALIGNMENT_BITS_HORIZONTAL    = SI_ALIGNMENT_LEFT | SI_ALIGNMENT_CENTER | SI_ALIGNMENT_RIGHT,
+    SI_ALIGNMENT_BITS_VERTICAL      = SI_ALIGNMENT_TOP | SI_ALIGNMENT_MIDDLE | SI_ALIGNMENT_BOTTOM,
+    SI_ALIGNMENT_BITS_ALL           = SI_ALIGNMENT_BITS_VERTICAL | SI_ALIGNMENT_BITS_HORIZONTAL
 };
 
 typedef struct {
@@ -179,7 +181,8 @@ typedef SI_ENUM(b32, siSide) {
     SI_SIDE_LEFT = SI_BIT(0),
     SI_SIDE_UP = SI_BIT(1),
     SI_SIDE_RIGHT = SI_BIT(2),
-    SI_SIDE_DOWN = SI_BIT(3)
+    SI_SIDE_DOWN = SI_BIT(3),
+	SI_SIDE_CENTER = SI_BIT(4)
 };
 
 
@@ -251,7 +254,7 @@ siVec2 siui_alignmentCalculateAreaEx(siArea largerArea, siArea alignedArea,
     }
 
     switch (align & SI_ALIGNMENT_BITS_VERTICAL) {
-        case SI_ALIGNMENT_UP: {
+        case SI_ALIGNMENT_TOP: {
             pos.y = posPad.y;
             break;
         }
@@ -259,7 +262,7 @@ siVec2 siui_alignmentCalculateAreaEx(siArea largerArea, siArea alignedArea,
             pos.y = (largerArea.height - alignedArea.height - posPad.y) / 2.0f;
             break;
         }
-        case SI_ALIGNMENT_DOWN: {
+        case SI_ALIGNMENT_BOTTOM: {
             pos.y = largerArea.height - alignedArea.height - posPad.y;
             break;
         }

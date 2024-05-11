@@ -1,7 +1,3 @@
-#include <sili.h>
-#include <silifig.h>
-#include <siliapp.h>
-#include <siliui-v2.h>
 #include <umm.h>
 
 // add resize support for win32 borderless windows
@@ -60,6 +56,8 @@ void siui_uiViewportSet(siUiContext* UI, siRect rect) {
 	SI_ASSERT_NOT_NULL(UI);
 	UI->viewport = SI_VEC4(rect.x, rect.y, rect.width, rect.height);
 	UI->offset = SI_VEC2(rect.x, rect.y);
+	UI->align = SI_ALIGNMENT_LEFT;
+	UI->padding = SI_VEC2(0, 0);
 }
 
 void siui_uiOriginSet(siUiContext* UI, siPoint pos) {
@@ -75,16 +73,21 @@ void siui_uiFrameSet(siUiContext* UI, siArea area) {
 	UI->viewport.w = area.height;
 }
 
-void siui_uiAlignmentSet(siUiContext* UI, siAlignment align, b32 resetOffset) {
+void siui_uiOffsetAlignSet(siUiContext* UI, siAlignment align) {
+	SI_ASSERT_NOT_NULL(UI);
 	UI->align = align;
+	siVec4* v = &UI->viewport;
 
-	switch (align * resetOffset) {
-		case SI_ALIGNMENT_LEFT:    UI->offset = SI_VEC2(0, UI->viewport.y); break;
-		case SI_ALIGNMENT_RIGHT:   UI->offset = SI_VEC2(UI->viewport.z, UI->viewport.y); break;
-		case SI_ALIGNMENT_CENTER:  UI->offset = SI_VEC2(UI->viewport.z / 2.0f, UI->viewport.w / 2.0f); break;
-		case SI_ALIGNMENT_UP:      UI->offset = SI_VEC2(UI->viewport.x, 0); break;
-		case SI_ALIGNMENT_DOWN:    UI->offset = SI_VEC2(UI->viewport.x, UI->viewport.w); break;
-		case SI_ALIGNMENT_MIDDLE:  UI->offset = SI_VEC2(UI->viewport.z / 2.0f, UI->viewport.w / 2.0f); break;
+	switch (align & SI_ALIGNMENT_BITS_HORIZONTAL) {
+		case SI_ALIGNMENT_LEFT:   UI->offset.x = v->x; break;
+		case SI_ALIGNMENT_RIGHT:  UI->offset.x = v->x + v->z; break;
+		case SI_ALIGNMENT_CENTER: UI->offset.x = v->x + v->z / 2.0f; break;
+	}
+
+	switch (align & SI_ALIGNMENT_BITS_VERTICAL) {
+		case SI_ALIGNMENT_TOP:    UI->offset.y = v->y; break;
+		case SI_ALIGNMENT_BOTTOM: UI->offset.y = v->y + v->w; break;
+		case SI_ALIGNMENT_MIDDLE: UI->offset.y = v->y + v->w / 2.0f; break;
 	}
 }
 
@@ -94,39 +97,241 @@ void siui_fillCtx(siUiContext* UI, siColor color) {
 	siapp_drawRectF(UI->win, UI->viewport, color);
 }
 
-void siui_drawText(siUiContext* UI, cstring text, siFont* font, i32 size) {
+
+siVec2 siapp_textAreaCalculate(cstring text, siFont* font, u32 size) {
+	SI_ASSERT_NOT_NULL(text);
+	SI_ASSERT_NOT_NULL(font);
+
+	f32 scaleFactor = (f32)size / font->size;
+	siVec2 base = SI_VEC2(0, 0);
+	f32 width = 0;
+	f32 height = 0;
+
+	usize index = 0;
+	while (true) {
+		siUtf32Char x = si_utf8Decode(&text[index]);
+		switch (x.codepoint) {
+			case SI_UNICODE_INVALID:
+			case 0: return SI_VEC2(si_maxf(width, base.x), si_maxf(height, base.y));
+
+			case ' ': {
+				base.x += font->advance.space * scaleFactor;
+				index += 1;
+				continue;
+			}
+			case '\t': {
+				base.x += font->advance.tab * scaleFactor;
+				index += 1;
+				continue;
+			}
+			case '\r':
+			case '\n': {
+				width = si_maxf(width, base.x);
+				base.x = 0;
+				base.y += font->advance.newline * scaleFactor;
+				index += 1;
+				continue;
+			}
+		}
+
+		siGlyphInfo* glyph = siapp_fontGlyphFind(font, x.codepoint);
+		if (height < glyph->height * scaleFactor) {
+			height = glyph->height * scaleFactor;
+		}
+
+		index += x.len;
+		base.x += glyph->advanceX * scaleFactor;
+	}
+}
+
+void siui_drawText(siUiContext* UI, cstring text, siFont* font, f32 percentOfViewport) {
 	SI_ASSERT_NOT_NULL(UI);
 
+	i32 size = UI->viewport.w * percentOfViewport;
+
  	switch (UI->align) {
-		case SI_ALIGNMENT_LEFT:    {
-			f32 width = siapp_drawTextF(UI->win, text, font, UI->offset, size);
+		case SI_ALIGNMENT_LEFT: {
+			f32 width = siapp_drawTextWithWrapF(UI->win, text, font, UI->offset, size, UI->viewport.z);
 			UI->offset.x += width + UI->padding.x;
 			break;
 		}
-		case SI_ALIGNMENT_RIGHT:   UI->offset = SI_VEC2(UI->viewport.z, UI->viewport.y); break;
-		case SI_ALIGNMENT_CENTER:  UI->offset = SI_VEC2(UI->viewport.z / 2.0f, UI->viewport.w / 2.0f); break;
-		case SI_ALIGNMENT_UP:      {
+		case SI_ALIGNMENT_TOP: {
 			siapp_drawTextF(UI->win, text, font, UI->offset, size);
 			UI->offset.y += size + UI->padding.y;
 			break;
 		}
-		case SI_ALIGNMENT_DOWN: {
+		case SI_ALIGNMENT_LEFT | SI_ALIGNMENT_MIDDLE: {
+			UI->offset.y -= (i32)(size / 2) + UI->padding.y;
+			f32 width = siapp_drawTextF(UI->win, text, font, UI->offset, size);
+			UI->offset.x += width + UI->padding.x;
+			break;
+		}
+		case SI_ALIGNMENT_BOTTOM: {
 			UI->offset.y -= size + UI->padding.y;
 			siapp_drawTextF(UI->win, text, font, UI->offset, size);
 			break;
 		}
-		case SI_ALIGNMENT_MIDDLE:  UI->offset = SI_VEC2(UI->viewport.z / 2.0f, UI->viewport.w / 2.0f); break;
+		default: SI_PANIC();
 	}
+}
 
-#if 0
-	if (UI->vertical) {
-		UI->offset.y += (size + UI->padding.y) * UI->dir;
+void siui_drawRect(siUiContext* UI, siVec2 size, siColor color) {
+	SI_ASSERT_NOT_NULL(UI);
+
+	siVec2 area = SI_VEC2(UI->viewport.z, UI->viewport.w);
+	area.x *= size.x;
+	area.y *= size.y;
+
+	switch (UI->align) {
+		case SI_ALIGNMENT_LEFT: {
+			siapp_drawRectF(UI->win, SI_VEC4_2V(UI->offset, area), color);
+			UI->offset.x += area.x;
+			break;
+		}
+		case SI_ALIGNMENT_TOP: {
+			siapp_drawRectF(UI->win, SI_VEC4_2V(UI->offset, area), color);
+			UI->offset.y += area.y + UI->padding.y;
+			break;
+
+		}
+		case SI_ALIGNMENT_LEFT | SI_ALIGNMENT_MIDDLE: {
+			UI->offset.y -= area.y / 2 + UI->padding.y;
+			siapp_drawRectF(UI->win, SI_VEC4_2V(UI->offset, area), color);
+			UI->offset.x += area.x;
+			break;
+		}
+		case SI_ALIGNMENT_BOTTOM: {
+			UI->offset.y -= area.y + UI->padding.y;
+			siapp_drawRectF(UI->win, SI_VEC4_2V(UI->offset, area), color);
+			break;
+		}
+		case SI_ALIGNMENT_LEFT | SI_ALIGNMENT_BOTTOM: {
+			UI->offset.y -= area.y + UI->padding.y;
+			siapp_drawRectF(UI->win, SI_VEC4_2V(UI->offset, area), color);
+			UI->offset.x += area.x;
+			break;
+		}
+		case SI_ALIGNMENT_RIGHT | SI_ALIGNMENT_MIDDLE: {
+			UI->offset.x -= area.x + UI->padding.x;
+			UI->offset.y -= area.y / 2 + UI->padding.y;
+			siapp_drawRectF(UI->win, SI_VEC4_2V(UI->offset, area), color);
+			break;
+		}
+
+
+		default: SI_PANIC();
+	}
+}
+
+void siui_drawImageEx(siUiContext* UI, siVec2 area, siImage image);
+
+void siui_drawImage(siUiContext* UI, siImage image) {
+	siui_drawImageEx(UI, SI_VEC2_A(image.size), image);
+}
+
+void siui_drawImageScale(siUiContext* UI, f32 scale, siImage image) {
+	siVec2 area = SI_VEC2_A(image.size);
+	area.x *= scale;
+	area.y *= scale;
+	siui_drawImageEx(UI, area, image);
+}
+
+void siui_drawImageProc(siUiContext* UI, f32 proc, siImage image, b32 preserveAspectRatio) {
+	siVec2 area;
+	area.y = UI->viewport.w;
+
+	if (preserveAspectRatio) {
+		area.y *= proc;
+
+		area.x = image.size.width * area.y;
+		area.x /= image.size.height;
 	}
 	else {
-		UI->offset.x += (width + UI->padding.x) * UI->dir;
+		area.x = UI->viewport.z;
+		area.x *= proc;
 	}
-#endif
+
+	siui_drawImageEx(UI, area, image);
 }
+
+void siui_drawImageEx(siUiContext* UI, siVec2 area, siImage image) {
+	SI_ASSERT_NOT_NULL(UI);
+
+	switch (UI->align) {
+		case SI_ALIGNMENT_LEFT: {
+			siapp_drawImageF(UI->win, SI_VEC4_2V(UI->offset, area), image);
+			UI->offset.x += area.x;
+			break;
+		}
+		case SI_ALIGNMENT_TOP: {
+			siapp_drawImageF(UI->win, SI_VEC4_2V(UI->offset, area), image);
+			UI->offset.y += area.y + UI->padding.y;
+			break;
+
+		}
+		case SI_ALIGNMENT_LEFT | SI_ALIGNMENT_MIDDLE: {
+			UI->offset.y -= area.y / 2 + UI->padding.y;
+			siapp_drawImageF(UI->win, SI_VEC4_2V(UI->offset, area), image);
+			UI->offset.x += area.x;
+			break;
+		}
+		case SI_ALIGNMENT_BOTTOM: {
+			UI->offset.y -= area.y + UI->padding.y;
+			siapp_drawImageF(UI->win, SI_VEC4_2V(UI->offset, area), image);
+			break;
+		}
+		case SI_ALIGNMENT_LEFT | SI_ALIGNMENT_BOTTOM: {
+			UI->offset.y -= area.y + UI->padding.y;
+			siapp_drawImageF(UI->win, SI_VEC4_2V(UI->offset, area), image);
+			UI->offset.x += area.x;
+			break;
+		}
+		case SI_ALIGNMENT_RIGHT | SI_ALIGNMENT_MIDDLE: {
+			UI->offset.x -= area.x + UI->padding.x;
+			UI->offset.y -= area.y / 2 + UI->padding.y;
+			siapp_drawImageF(UI->win, SI_VEC4_2V(UI->offset, area), image);
+			break;
+		}
+
+
+		default: SI_PANIC();
+	}
+}
+
+
+void siui_uiPaddingSet(siUiContext* UI, siVec2 padding, b32 addNow);
+
+void siui_uiPaddingProcSet(siUiContext* UI, siVec2 padding, b32 addNow) {
+	padding.x *= UI->viewport.z;
+	padding.y *= UI->viewport.w;
+	siui_uiPaddingSet(UI, padding, addNow);
+}
+void siui_uiPaddingSet(siUiContext* UI, siVec2 padding, b32 addNow) {
+	SI_ASSERT_NOT_NULL(UI);
+	UI->padding = padding;
+
+	if (addNow) {
+		UI->offset.x += padding.x;
+		UI->offset.y += padding.y;
+	}
+}
+
+void siui_uiPaddingReset(siUiContext* UI) {
+	UI->padding = SI_VEC2(0, 0);
+}
+
+void siui_uiOffsetResetX(siUiContext* UI) {
+	SI_ASSERT_NOT_NULL(UI);
+
+	switch (UI->align & SI_ALIGNMENT_BITS_HORIZONTAL) {
+		case SI_ALIGNMENT_LEFT: {
+			UI->offset.x = UI->viewport.x;
+			break;
+		}
+		default: SI_PANIC();
+	}
+}
+
 
 b32 umm_startup(ummGlobalVars* g) {
 #if 1
@@ -168,7 +373,7 @@ b32 umm_startup(ummGlobalVars* g) {
 		"Sili Mod Manger", SI_AREA(0, 0),
 		SI_WINDOW_DEFAULT | SI_WINDOW_OPTIMAL_SIZE | SI_WINDOW_KEEP_ASPECT_RATIO | SI_WINDOW_HIDDEN
 	);
-	siapp_windowRendererMake(win, SI_RENDERING_OPENGL, 1, SI_AREA(512, 512), 1);
+	siapp_windowRendererMake(win, SI_RENDERING_CPU, 1, SI_AREA(512, 512), 1);
     siapp_windowBackgroundSet(win, SI_RGB(42, 42, 42));
 
 	b32 exitedCleanly = false;
@@ -177,44 +382,9 @@ b32 umm_startup(ummGlobalVars* g) {
 
 	siapp_windowShow(win, SI_SHOW_ACTIVATE);
 
-#if 0
-	t.welcome = "Welcome!";
-	t.description =
-		"Sili Mod Manager is a mod manager %*for%* the silly, %*by%* the silly. "
-		"Due to %_ almost everything%_ in this app being completely written in "
-		"low-level C by some naive developer, bugs are to be expected and possibly "
-		"reported.\n\n"
-
-		"%*%_COPY YOUR SAVE FILE AND GAME FILES BEFORE USING SILI! YOU ARE RESPONSIBLE FOR ANYTHING THAT HAPPENS%*%_\n\n"
-
-		"PATHS:";
-
-	siConfigCategory config[UMM_LANG_COUNT];
-	umm_textFileDump(g, &config[UMM_LANG_ENG], &t, 2);
-
-	t.welcome = "Sveikas!";
-	t.description =
-		"Silio Modų Tvarkytuvė - kvailių sukurta modų tvarkytuvė skirta kitiems kvailiams."
-		"Kadangi %_beveik viskas%_ šioje aplikacijoje užrašytas naivaus programuotojo"
-		"naudojant žemo lygio C kalbą, techninės klaidos ir jų ataskaitos yra galimos\n\n"
-
-		"%*%_PASIDARYKITE KOPIJAS SAVO IŠSAUGOJIMO FAILO IR ŽAIDIMO FAILŲ PRIEŠ NAUDODAMI SILĮ! JŪS ATSAKINGI UŽ VISKĄ, KAS ATSITIKS.\n\n"
-
-		"KELIAI:";
-
-	umm_textFileDump(g, &config[UMM_LANG_LIT], &t, 2);
-
-
-	char b[SI_KILO(1)];
-	usize len = silifig_configMakeEx(0, countof(config), SI_CONFIG_CATEGORIES, config, b);
-
-	siFile f = si_fileCreate("test.sfg");
-	si_fileWriteLen(&f, b, len);
-	si_fileClose(f);
-#endif
 
 	{
-		siFile txt = si_fileOpen("res/text.sfg");
+		siFile txt = si_fileOpen("res/startup.sfg");
 		siAllocator* tmp = si_allocatorMake(txt.size);
 		siByte* content = si_fileReadContents(txt, tmp);
 
@@ -244,86 +414,25 @@ b32 umm_startup(ummGlobalVars* g) {
 		siUiContext UI = siui_uiContextMake(win);
 
 		siui_uiViewportSet(&UI, SI_RECT(0, 0, area.width, area.height * 0.3f)); {
-			siui_uiAlignmentSet(&UI, SI_ALIGNMENT_DOWN, true);
 			siui_fillCtx(&UI, CLR->tertiary);
-			siui_drawText(&UI, TXT.welcome, &font, area.height * 0.13f);
-			siui_drawText(&UI, TXT.welcome, &font, area.height * 0.13f);
-			siui_drawText(&UI, TXT.welcome, &font, area.height * 0.13f);
+
+			siui_uiOffsetAlignSet(&UI, SI_ALIGNMENT_LEFT | SI_ALIGNMENT_MIDDLE);
+			siui_uiPaddingProcSet(&UI, SI_VEC2(0.012f, 0), true);
+			siui_drawText(&UI, TXT.welcome, &font, 0.4f);
+
+			siui_uiOffsetAlignSet(&UI, SI_ALIGNMENT_LEFT | SI_ALIGNMENT_BOTTOM);
+			siui_uiPaddingReset(&UI);
+			siui_drawRect(&UI, SI_VEC2(1, 0.00625), CLR->quaternary);
+
+			siui_uiOffsetAlignSet(&UI, SI_ALIGNMENT_RIGHT | SI_ALIGNMENT_MIDDLE);
+			siui_drawImageProc(&UI, 1.0f, logo, true);
 		}
 
-        //siapp_drawRect(win, SI_RECT(0, 0, area.width, area.height * 0.3), schemes[0].tertiary);
-        //siapp_drawRect(win, SI_RECT(0, area.height * 0.3, area.width, 1), schemes[0].quaternary);
+		siui_uiViewportSet(&UI, SI_RECT(0, UI.viewport.w, area.width, area.height - UI.viewport.w)); {
+			siui_uiPaddingProcSet(&UI, SI_VEC2(0.012f, 0.036f), true);
+			siui_drawText(&UI, TXT.description, &font, 0.06);
+		}
 
-        //siapp_drawTextF(win, t.welcome, &font, SI_VEC2(0, 0), area.height * 0.13);
-        //siapp_drawImage(win, SI_RECT(area.width - 48 - 3, 0, 48, 48), logo);
-
-        //siVec2 textArea;
-		//siapp_drawTextF(win, descText, SI_VEC2(area.width * 0.00625, area.height * 0.28), area.height * 0.03);
-
-        //siRect base = SI_RECT(4, 12 + 52 + textArea.y, area.width - 24, 10);
-#if 0
-        for_range (i, 0, countof(pathInputs)) {
-            siapp_drawTextItalic2f(win, pathTexts[i], SI_VEC2(base.x + 2, base.y - 6), 4);
-
-            siui_textInputRectSet(&pathInputs[i], base);
-            siui_drawTextInput(&pathInputs[i], 6);
-
-            siRect buttonR;
-            buttonR.x = base.x + base.width + 4;
-            buttonR.y = base.y;
-            buttonR.width = buttonR.height = base.height;
-
-            siui_buttonRectSet(&pathButton, buttonR);
-            siui_buttonUpdateState(&pathButton);
-
-            if (pathButton.state.clicked) {
-                siAllocator* tmp = si_allocatorMakeStack(SI_KILO(1));
-                siSearchResult res = siapp_fileManagerOpen(tmp, configs[i]);
-
-                if (res.items != nil) {
-                    siui_textInputStringSet(&pathInputs[i], res.items[0]);
-                }
-            }
-            siui_drawButton(pathButton);
-
-            base.y += base.height + 8;
-        }
-
-        base.y -= 2;
-        base.width += 4 + 10;
-        //siui_buttonRectSet(&continueButton, base);
-        //siui_buttonUpdateState(&continueButton);
-        //siui_drawButton(continueButton);
-
-        if (continueButton.state.released && continueButton.state.hovered) {
-            b32 failed = false;
-            for_range (i, 0, countof(pathInputs)) {
-                siAllocator* tmp = si_allocatorMake(SI_KILO(1));
-
-                if (pathInputs[i].button.cmd.text.len == 0) {
-                    cstring msg = si_cstrMakeFmt(tmp, "Nothing was entered for the '%s' textfield.", pathCstrs[i]);
-                    siapp_messageBox("Missing Input", msg, SI_MESSAGE_BOX_OK, SI_MESSAGE_BOX_ICON_ERROR);
-                    failed = true;
-                    goto end;
-                }
-
-                siSiliStr path = siui_textInputStringGet(g->alloc.heap, pathInputs[i]);
-
-                if (!si_pathExists(path)) {
-                    cstring msg = si_cstrMakeFmt(tmp, "Path '%s' doesn't exist. Please input a valid path.", path);
-                    siapp_messageBox("Invalid Path", msg, SI_MESSAGE_BOX_OK, SI_MESSAGE_BOX_ICON_ERROR);
-                    failed = true;
-                    goto end;
-                }
-                text[i] = path;
-            }
-end:
-            if (!failed) {
-                exitedCleanly = true;
-                break;
-            }
-        }
-#endif
 
         siapp_windowRender(win);
         siapp_windowSwapBuffers(win);
@@ -337,7 +446,7 @@ end:
 
 int main(void) {
 	ummGlobalVars g = {0};
-	g.langID = 1;
+	g.langID = UMM_LANG_ENG;
 	g.alloc.tmp = si_allocatorMake(SI_KILO(4));
 	umm_startup(&g);
 	exit(0);

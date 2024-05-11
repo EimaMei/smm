@@ -1,8 +1,9 @@
 #pragma once
 
-#include "sili.h"
-#include <siliapp.h>
-#include <siliui-v2.h>
+#include <sili/sili.h>
+#include <sili/silifig.h>
+#include <sili/siliapp.h>
+#include <sili/siliui-v2.h>
 
 static const siVersion UMM_VERSION = {0, 0};
 
