@@ -23,6 +23,19 @@ typedef SI_ENUM(b32, ummPlatform) {
 };
 
 typedef struct {
+	siColor primary;
+	siColor secondary;
+	siColor accent;
+} ummColorScheme;
+
+typedef struct {
+	ummColorScheme bg;
+	ummColorScheme text;
+} ummColorPalette;
+
+#define UMM_COLOR_SCHEME(primary, secondary, accent) ((ummColorScheme){primary, secondary, accent})
+
+typedef struct {
 	char* welcome;
 	char* description;
 	char* paths[3];
@@ -31,7 +44,6 @@ typedef struct {
 
 typedef struct {
     siVec4 titleRects[5];
-    siExpandable titleExpands[5];
 } ummTabMod;
 
 typedef struct {
@@ -55,12 +67,9 @@ typedef struct {
 	siFont font;
     siSpriteSheet icons;
 
-    struct {
-        siColorScheme main;
-        siColorScheme button;
-    } schemes;
+	ummColorPalette pallete;
 
-    siButton primaryButtons[5];
+    //siButton primaryButtons[5];
     u32 primarySelected;
 
     ummTabMod tabMod;
@@ -76,7 +85,7 @@ cstring umm_getAsset(ummGlobalVars* g, cstring file);
 
 siSiliStr umm_getGameFile(ummGlobalVars* g, cstring file);
 
-
+#if 0
 void umm_tabMainClick(siButton* button, rawptr userParam);
 void umm_tabMainEnter(siButton* button, rawptr userParam);
 void umm_tabMainLeave(siButton* button, rawptr userParam);
@@ -94,3 +103,4 @@ void umm_tabModPriority(siButton* button, rawptr userParam);
 void umm_tabModCheckClick(siButton* button, rawptr userParam);
 void umm_tabModCheckEnter(siButton* button, rawptr userParam);
 void umm_tabModCheckLeave(siButton* button, rawptr userParamArr);
+#endif

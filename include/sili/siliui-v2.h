@@ -54,6 +54,9 @@ WARNING
 #ifndef SIUI_INCLUDE_SIUI_H
 #define SIUI_INCLUDE_SIUI_H
 
+#if defined(si_clangd_shutup)
+#include <sili/siliapp.h>
+#endif
 
 #if !defined(SIAPP_INCLUDE_SIAPP_H)
 	#error "siliapp.h must be included to use this library."
@@ -84,8 +87,23 @@ typedef struct {
     b8 clicked      : 1;
     b8 pressed      : 1;
     b8 released     : 1;
+
+    b8 entered      : 1;
     b8 exited       : 1;
 } siButtonState;
+
+typedef SI_ENUM(u8, siButtonStateBits) {
+    SI_BUTTON_STATE_BIT_HOVERED = SI_BIT(0),
+    SI_BUTTON_STATE_BIT_CLICKED = SI_BIT(1),
+    SI_BUTTON_STATE_BIT_PRESSED = SI_BIT(2),
+    SI_BUTTON_STATE_BIT_RELEASED = SI_BIT(3),
+    SI_BUTTON_STATE_BIT_ENTERED = SI_BIT(4),
+    SI_BUTTON_STATE_BIT_EXITED = SI_BIT(5),
+
+    SI_BUTTON_STATE_BIT_ALL = SI_BUTTON_STATE_BIT_HOVERED |  SI_BUTTON_STATE_BIT_CLICKED
+                                | SI_BUTTON_STATE_BIT_PRESSED | SI_BUTTON_STATE_BIT_RELEASED
+                                | SI_BUTTON_STATE_BIT_ENTERED | SI_BUTTON_STATE_BIT_EXITED,
+};
 
 /* NOTE(EimaMei): Terminology:
  * SI_BUTTON_<object>_<verb> - Change <object> when it <verb> to <value>.
@@ -109,73 +127,6 @@ typedef struct {
     u32 value[SI_BUTTON_CONFIG_COUNT];
 } siButtonConfig;
 
-typedef SI_ENUM(i32, siShapeType) {
-    SI_SHAPE_NULL = 0,
-    SI_SHAPE_RECT,
-    SI_SHAPE_CIRCLE,
-    SI_SHAPE_IMAGE,
-
-    SI_SHAPE_RECT_4F,
-};
-
-typedef union {
-    siRect rect;
-    siVec4 rect4f;
-    struct {
-        siPoint pos;
-        i32 radius;
-    } circle;
-    siImage image;
-} siShape;
-
-typedef SI_ENUM(i32, siDrawCommandFeatures) {
-    SI_FEATURE_OUTLINE  = SI_BIT(0),
-    SI_FEATURE_TEXT     = SI_BIT(1),
-    SI_FEATURE_IMAGE    = SI_BIT(2)
-};
-
-typedef struct {
-    i32 size;
-    siColor color;
-} siOutline;
-
-typedef struct {
-    siShapeType type;
-    siDrawCommandFeatures features;
-    siShape shape;
-
-    siColor color;
-    siOutline outline;
-
-    i32 textSize;
-
-    siImage image;
-    siArea imageSize;
-} siDrawCommand;
-
-
-typedef struct {
-    siWindow* win;
-    siDrawCommand cmd;
-    struct {
-        siColor color;
-        siOutline outline;
-    } ogValues;
-
-    siButtonState state;
-
-    siButtonConfig config;
-    siButtonConfigType previousActive;
-
-    siAlignment textAlignment;
-    siPoint textPosPad;
-
-    siAlignment imageAlignment;
-    siPoint imagePosPad;
-} siButton;
-
-
-typedef siButton siExpandable;
 
 typedef SI_ENUM(b32, siSide) {
     SI_SIDE_LEFT = SI_BIT(0),
@@ -186,33 +137,6 @@ typedef SI_ENUM(b32, siSide) {
 };
 
 
-typedef struct {
-    siColor primary;
-    siColor secondary;
-    siColor tertiary;
-    siColor quaternary;
-} siColorScheme;
-
-#define SI_COLOR_SCHEME_MAKE(color) \
-    ((siColorScheme){                      \
-        .primary = color,                \
-        .secondary = SI_RGBA((color).r * 0.75, (color).g * 0.75, (color).b * 0.75, (color).a), \
-        .tertiary = SI_RGBA((color).r * 0.5, (color).g * 0.5, (color).b * 0.5, (color).a),     \
-        .quaternary = SI_RGBA((color).r * 0.25, (color).g * 0.25, (color).b * 0.25, (color).a), \
-    })
-
-#define SI_COLOR_SCHEME(primary, secondary, tertiary, quaternary) \
-    ((siColorScheme){                      \
-        primary, secondary, tertiary, quaternary \
-     })
-
-#define SI_COLOR_DARKEN(color, floatmod) \
-    SI_RGBA( \
-        (color).r * (floatmod), \
-        (color).g * (floatmod), \
-        (color).b * (floatmod), \
-        (color).a \
-    )
 
 /* */
 siVec2 siui_alignmentCalculateAreaEx(siArea largerArea, siArea alignedArea,

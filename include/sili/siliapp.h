@@ -619,6 +619,7 @@ typedef struct {
 
 	u32 size;
 	f32	scale;
+	f32 descent;
 
 	struct {
 		f32 space;
@@ -640,28 +641,50 @@ typedef struct {
 } siText;
 #endif
 
-#define SI_GLYPHSET_ASCII                {0x0020, 0x007E}
-#define SI_GLYPHSET_ISO_8859_1           {0x00A0, 0x00FF}
-
-#define SI_GLYPHSET_LATIN_BASIC          {0x0020, 0x007E}
-#define SI_GLYPHSET_LATIN_1_SUPPLEMENT   {0x00A0, 0x00FF}
-#define SI_GLYPHSET_LATIN_EXTENDED_A     {0x0100, 0x017F}
-
-#define SI_GLYPHSET_HIRAGANA {0x3040, 0x309F}
-#define SI_GLYPHSET_KATAKANA {0x30A0, 0x30FF}
 // TODO: Enforce a chronological order.
 
 #define SI_GLYPHSET_END {UINT32_MAX, UINT32_MAX}
 
 
 #define SI_CHARSET_WGL4 \
-		SI_GLYPHSET_ASCII, SI_GLYPHSET_ISO_8859_1, SI_GLYPHSET_LATIN_1_SUPPLEMENT, \
-		SI_GLYPHSET_LATIN_EXTENDED_A, {0x0192, 0x0192}, {0x01FA, 0x01FF}, {0x02C6, 0x02C7}, \
-		{0x02C9, 0x02C9}, {0x02D7, 0x02DD}, {0x0384, 0x038B}, {0x038C, 0x38C}, \
-		{0x038E, 0x03A1}, {0x03A3, 0x03CE}, {0x400, 0x45F}, {0x0490, 0x0491}, \
-		{0x1E80, 0x1E85}, {0x2013, 0x2015}, {0x2016, 0x201E}, {0x2020, 0x2022}, \
-		{0x0001F5FF, 0x0001F5FF}
-#define SI_CHARSET_DEFAULT SI_CHARSET_WGL4
+		{0x0020, 0x007E}, {0x00A0, 0x017F}, {0x0192, 0x0192}, {0x01FA, 0x01FF}, \
+		{0x02C6, 0x02C7}, {0x02C9, 0x02C9}, {0x02D8, 0x02DD}, {0x0384, 0x038A}, \
+		{0x038C, 0x038C}, {0x038E, 0x03A1}, {0x03A3, 0x03CE}, {0x0400, 0x045F}, \
+		{0x0490, 0x0491}, {0x1E80, 0x1E85}, {0x1EF2, 0x1EF3}, {0x2013, 0x2015}, \
+		{0x2018, 0x201E}, {0x2020, 0x2022}, {0x2026, 0x2026}, {0x2030, 0x2030}, \
+		{0x2032, 0x2033}, {0x2039, 0x203A}, {0x203C, 0x203C}, {0x203E, 0x203E}, \
+		{0x2044, 0x2044}, {0x207F, 0x207F}, {0x20A3, 0x20A4}, {0x20A7, 0x20A7}, \
+		{0x20AC, 0x20AC}, {0x2105, 0x2105}, {0x2113, 0x2113}, {0x2116, 0x2116}, \
+		{0x2122, 0x2122}, {0x2126, 0x2126}, {0x212E, 0x212E}, {0x215B, 0x215E}, \
+		\
+		{0x2190, 0x2195}, {0x2202, 0x2202}, {0x2202, 0x2202}, {0x2206, 0x2206}, {0x220F, 0x220F}, \
+		{0x2211, 0x2212}, {0x2215, 0x2215}, {0x2219, 0x221A}, {0x221E, 0x221F}, \
+		{0x2029, 0x2029}, {0x200B, 0x200b}, \
+		{0x2248, 0x2248}, {0x2260, 0x2261}, {0x2264, 0x2265}, {0x2500, 0x2500}, \
+		{0x2502, 0x2502}, {0x250C, 0x250C}, {0x2510, 0x2510}, {0x2514, 0x2514}, \
+		{0x2518, 0x2518}, {0x2514, 0x2514}, {0x2518, 0x2518}, {0x251C, 0x251C}, \
+		{0x2524, 0x2525}, {0x252C, 0x252C}, {0x2534, 0x2534}, {0x253C, 0x253C}, \
+		{0x2550, 0x256C}, \
+		\
+		{0xFB01, 0xFB02}
+
+#define SI_CHARSET_WGS \
+		{0x0020, 0x007E}, {0x00A0, 0x017E}, {0x0192, 0x0192}, {0x01FA, 0x01FF}, \
+		{0x0218, 0x021B}, {0x02C6, 0x02C7}, {0x02C9, 0x02C9}, {0x02D8, 0x02DD}, \
+		{0x037E, 0x037E}, {0x0384, 0x038A}, {0x038C, 0x038C}, {0x038E, 0x03A1}, \
+		{0x03A3, 0x03CE}, {0x0400, 0x045F}, {0x0462, 0x0463}, {0x0472, 0x0475}, \
+		{0x0490, 0x0491}, {0x1E80, 0x1E85}, {0x1EF2, 0x1EF3}, {0x2013, 0x2015}, \
+		{0x2018, 0x201E}, {0x2020, 0x2022}, {0x2026, 0x2026}, {0x2030, 0x2030}, \
+		{0x2032, 0x2033}, {0x2039, 0x203A}, {0x203D, 0x203D}, {0x2044, 0x2044}, \
+		{0x2070, 0x2070}, {0x2074, 0x208E}, {0x20AC, 0x20AC}, {0x2105, 0x2105}, \
+		{0x2113, 0x2113}, {0x2116, 0x2117}, {0x2122, 0x2122}, {0x2126, 0x2126}, \
+		{0x212E, 0x212E}, {0x215B, 0x215E}, {0x2202, 0x2202}, {0x2206, 0x2206}, \
+		{0x220F, 0x220F}, {0x2211, 0x2212}, {0x2215, 0x2215}, {0x2219, 0x221A}, \
+		{0x221E, 0x221E}, {0x200B, 0x200b}, {0x2248, 0x2248}, {0x2260, 0x2260}, \
+		{0x2264, 0x2265}, {0xFB00, 0xFB04}
+
+
+#define SI_CHARSET_DEFAULT SI_CHARSET_WGS
 
 
 typedef SI_ENUM(i32, siMessageBoxButton) {
@@ -1038,14 +1061,14 @@ void siapp_drawCircleExF(siWindow* win, siVec2 pos, i32 radius, u32 sides, siCol
 void siapp_drawPolygonF(siWindow* win, siVec4 rect, u32 sides, siColor color);
 
 /* Draws the text based on the specified NULL-terminated string and siPoint position. */
-f32 siapp_drawText(siWindow* win, cstring text, siFont* font, siPoint pos, u32 size);
+siVec2 siapp_drawText(siWindow* win, cstring text, siFont* font, siPoint pos, u32 size);
 /* Draws the text based on the specified NULL-terminated string and siVec2 position. */
-f32 siapp_drawTextF(siWindow* win, cstring text, siFont* font, siVec2 pos, u32 size);
+siVec2 siapp_drawTextF(siWindow* win, cstring text, siFont* font, siVec2 pos, u32 size);
 /* */
-f32 siapp_drawTextWithWrap(siWindow* win, cstring text, siFont* font, siPoint pos,
+siVec2 siapp_drawTextWithWrap(siWindow* win, cstring text, siFont* font, siPoint pos,
 		u32 size, i32 maxWidth);
 /* */
-f32 siapp_drawTextWithWrapF(siWindow* win, cstring text, siFont* font, siVec2 pos,
+siVec2 siapp_drawTextWithWrapF(siWindow* win, cstring text, siFont* font, siVec2 pos,
 		u32 size, f32 maxWidth);
 
 /* */
@@ -1053,6 +1076,8 @@ f32 siapp_drawCharacter(siWindow* win, const siFont* font, const siGlyphInfo* gl
 		siVec2 pos, u32 size);
 /* */
 f32 siapp_drawCharacterScale(siWindow* win, const siFont* font, const siGlyphInfo* glyph,
+		siVec2 pos, u32 size, f32 scaleFactor);
+f32 siapp_drawCharacterItalicScale(siWindow* win, const siFont* font, const siGlyphInfo* character,
 		siVec2 pos, u32 size, f32 scaleFactor);
 
 
@@ -1332,41 +1357,6 @@ siDropEvent* siapp__findDndNode(siWindow* win, siPoint pos) {
 
 	return node;
 }
-
-force_inline
-void siapp__drawTextWrapped(siWindow* win, cstring text, siFont* font, f32 posX,
-		u32 size, f32 maxWidth, f32 scaleFactor, siVec2* base, f32* width, usize* index) {
-	siUtf32Char x;
-	siGlyphInfo* glyph;
-	usize chainLen = 0;
-	f32 addedWidth = base->x;
-	u32 maxChars[256];
-
-	while (true) {
-		if (addedWidth > maxWidth) {
-			*width = maxWidth;
-			base->x = posX;
-			base->y += font->advance.newline * scaleFactor;
-			break;
-		}
-
-		x = si_utf8Decode(&text[*index]);
-		SI_STOPIF(x.codepoint == ' ' || (x.codepoint >= '\t' && x.codepoint <= '\r') || x.codepoint == '%', break);
-
-		glyph = siapp_fontGlyphFind(font, x.codepoint);
-		maxChars[chainLen] = glyph - font->glyphs;
-		addedWidth += glyph->advanceX * scaleFactor;
-		*index += x.len;
-		chainLen += 1;
-	}
-
-	for_range (i, 0, chainLen) {
-		glyph = &font->glyphs[maxChars[i]];
-		f32 advance = siapp_drawCharacterScale(win, font, glyph, *base, size, scaleFactor);
-		base->x += advance;
-	}
-}
-
 #endif
 
 #if defined(SIAPP_PLATFORM_API_WIN32)
@@ -3586,8 +3576,9 @@ void siapp_windowBorderlessSet(siWindow* win, b32 borderless) {
 
 #elif defined(SIAPP_PLATFORM_API_X11)
 	struct __x11WindowHints {
-		unsigned long flags, functions, decorations, status;
+		unsigned long flags, functions, decorations;
 		long input_mode;
+		unsigned long status;
 	} hints;
 	hints.flags = (1L << 1);
 	hints.decorations = !borderless;
@@ -5566,10 +5557,10 @@ void siapp_spriteSheetSpriteSetEx(siSpriteSheet sheet, usize index, siByte* data
 }
 
 siFont siapp_fontLoad(siWindow* win, cstring path, i32 size) {
-	return siapp_fontLoadEx(win, path, size, si_buf(siGlyphSet, SI_CHARSET_WGL4, SI_GLYPHSET_END), 0);
+	return siapp_fontLoadEx(win, path, size, si_buf(siGlyphSet, SI_CHARSET_DEFAULT, SI_GLYPHSET_END), 0);
 }
 siFont siapp_fontLoadExtra(siWindow* win, cstring path, i32 size, usize extraChars) {
-	return siapp_fontLoadEx(win, path, size, si_buf(siGlyphSet, SI_CHARSET_WGL4, SI_GLYPHSET_END), extraChars);
+	return siapp_fontLoadEx(win, path, size, si_buf(siGlyphSet, SI_CHARSET_DEFAULT, SI_GLYPHSET_END), extraChars);
 }
 
 static i16 si_ttSHORT(siByte* p) {
@@ -5671,18 +5662,26 @@ siFont siapp_fontLoadEx(const siWindow* win, cstring path, i32 size, siGlyphSet*
 	SI_ARRAY_HEADER(font.glyphs)->len = charCount;
 
 	siByte* tmpBuf = si_mallocArray(tmpAlloc, siByte, size * size);
+
+	siByte* ptr = info.data + info.hhea + 4;
+	i32 ascent = si_ttUSHORT(ptr);
+	i32 descent = si_ttSHORT(ptr + sizeof(u16));
+	u32 numOfLongHorMetrics = si_ttUSHORT(info.data + info.hhea + 34);
 	{
-		siByte* ptr = info.data + info.hhea + 4;
-		i32 fheight = si_ttSHORT(ptr) - si_ttSHORT(ptr + sizeof(u16));
-		font.scale = (f32)size / fheight;
-		font.advance.space = font.size / 3.0f;
-		font.advance.tab = font.size / 1.0f;
-		font.advance.newline = font.size * 1.25f;
+		font.scale = (f32)size / (ascent - descent);
+		font.descent = descent * font.scale;
+
+		u32 glyphIndex = stbtt_FindGlyphIndex(&info, ' ');
+		i32 advanceX = (glyphIndex < numOfLongHorMetrics)
+				? si_ttSHORT(info.data + info.hmtx + 4 * glyphIndex)
+				: si_ttSHORT(info.data + info.hmtx + 4 * (numOfLongHorMetrics - 1));
+
+		font.advance.space = advanceX * font.scale;
+		font.advance.tab = 4 * font.advance.space;
+		font.advance.newline = font.size + -font.descent;// * font.scale;
 	}
 
 
-	u32 numOfLongHorMetrics = si_ttUSHORT(info.data + info.hhea + 34);
-	i32 descent = si_ttSHORT(info.data + info.hhea + 6);
 
 	{ /* NOTE(EimaMei): Finding the missing character glyph and push it to the front. */
 		siGlyphInfo* glyph = &font.glyphs[0];
@@ -5697,7 +5696,7 @@ siFont siapp_fontLoadEx(const siWindow* win, cstring path, i32 size, siGlyphSet*
 		i32 y1 = si_ttSHORT(info.data + g + 8);
 
 		glyph->x = si_floor(x0 * font.scale);
-		glyph->y = si_floor((-y1 + descent) * font.scale);
+		glyph->y = si_floor(-y1 * font.scale);
 		glyph->width = si_ceil(x1 * font.scale) - glyph->x;
 		glyph->height = si_ceil(-y0 * font.scale) - glyph->y;
 
@@ -5745,9 +5744,9 @@ siFont siapp_fontLoadEx(const siWindow* win, cstring path, i32 size, siGlyphSet*
 			i32 y1 = si_ttSHORT(info.data + g + 8);
 
 			glyph->x = si_floor(x0 * font.scale);
-			glyph->y = si_floor(-y1 * font.scale) + descent * font.scale;
+			glyph->y = si_floor(-y1 * font.scale);
 			glyph->width = si_ceil(x1 * font.scale) - glyph->x;
-			glyph->height = si_ceil(-y0 * font.scale) + descent * font.scale - glyph->y;
+			glyph->height = si_ceil(-y0 * font.scale) - glyph->y;
 
 			stbtt_MakeGlyphBitmap(
 				&info, tmpBuf,
@@ -5950,7 +5949,7 @@ void siapp_drawRectF(siWindow* win, siVec4 rect, siColor color) {
 			siWinRenderingCtxCPU* cpu = &win->render.cpu;
 
 			siVec2 scale = win->scaleFactor;
-			siRect r = SI_RECT(
+			siVec4 r = SI_VEC4(
 				rect.x * scale.x,
 				rect.y * scale.y,
 				rect.z * scale.x,
@@ -5964,12 +5963,13 @@ void siapp_drawRectF(siWindow* win, siVec4 rect, siColor color) {
 
 			alpha = 1.0f - alpha;
 
-			for_range (y, r.y, r.y + r.height) {
-				SI_STOPIF(y > win->e.windowSize.height, break);
-				usize index = y * cpu->width + r.x * SI__CHANNEL_COUNT;
+			i32 newX = si_round(si_clampf(r.x, 0, win->e.windowSize.width));
+			f32 newY = si_clampf(r.y, 0, win->e.windowSize.width);
 
-				for_range (x, r.x, r.x + r.width) {
-					SI_STOPIF(x > win->e.windowSize.width, break);
+			for_range (y, newY, r.y + r.w) {
+				usize index = si_round(y) * cpu->width + newX * SI__CHANNEL_COUNT;
+
+				for_range (x, newX, r.x + r.z) {
 					cpu->buffer[index + 0] *= alpha;
 					cpu->buffer[index + 1] *= alpha;
 					cpu->buffer[index + 2] *= alpha;
@@ -6020,13 +6020,13 @@ void siapp__cpuDrawImage(siWindow* win, siPoint pos, siImage* img,
 	usize imgX = img->pos.cpu.x1;
 	usize imgY = img->pos.cpu.y1;
 
-	for_range (y, pos.y, pos.y + img->size.height) {
-		SI_STOPIF(y > win->e.windowSize.height, break);
+	f32 newX = si_clampf(pos.x, 0, win->e.windowSize.width);
+	f32 newY = si_clampf(pos.y, 0, win->e.windowSize.width);
 
-		usize index = y * win->render.cpu.width + pos.x * SI__CHANNEL_COUNT;
+	for_range (y, newY, pos.y + img->size.height) {
+		usize index = y * win->render.cpu.width + newX * SI__CHANNEL_COUNT;
 		usize imgIndex = imgY * atlas->totalWidth + imgX;
-		for_range (x, pos.x, pos.x + img->size.width) {
-			SI_STOPIF(x > win->e.windowSize.width, break);
+		for_range (x, newX, pos.x + img->size.width) {
 			siapp_cpuBufferSetPixelFromImg(&win->render.cpu, index, imgIndex, tint);
 
 			index += SI__CHANNEL_COUNT;
@@ -6037,23 +6037,26 @@ void siapp__cpuDrawImage(siWindow* win, siPoint pos, siImage* img,
 }
 
 
-void siapp__cpuDrawImageNearest(siWindow* win, siRect r, siImage* img,
+void siapp__cpuDrawImageNearest(siWindow* win, siVec4 r, siImage* img,
 		siVec4 tint) {
 	siTextureAtlas* atlas = img->atlas;
 
-	f32 scaleW = img->size.width / (f32)r.width;
-	f32 scaleH = img->size.height / (f32)r.height;
+	f32 scaleW = img->size.width / r.z;
+	f32 scaleH = img->size.height / r.w;
 	f32 imgY = img->pos.cpu.y1;
 
+	f32 newX = si_clampf(r.x, 0, win->e.windowSize.width);
+	f32 newY = si_clampf(r.y, 0, win->e.windowSize.width);
+	i32 x0 = si_round(newX);
 
-	for_range (y, r.y, r.y + r.height) {
-		SI_STOPIF(y > win->e.windowSize.height, break);
-		usize index = y * win->render.cpu.width + r.x * SI__CHANNEL_COUNT;
+	for_range (y, newY, si_round(r.y + r.w)) {
+		SI_STOPIF(!si_between(y, 0, win->e.windowSize.height), break);
+		usize index = si_round(y) * win->render.cpu.width + x0 * SI__CHANNEL_COUNT;
 		usize imgIndexY = (i32)imgY * atlas->totalWidth;
 		f32 imgIndexX = img->pos.cpu.x1;
 
-		for_range (x, r.x, r.x + r.width) {
-			SI_STOPIF(x > win->e.windowSize.width, break);
+		for_range (x, newX, si_round(r.x + r.z)) {
+			SI_STOPIF(!si_between(x, 0, win->e.windowSize.width), break);
 			siapp_cpuBufferSetPixelFromImg(&win->render.cpu, index, (usize)(imgIndexY + imgIndexX), tint);
 			imgIndexX += scaleW;
 		}
@@ -6061,21 +6064,23 @@ void siapp__cpuDrawImageNearest(siWindow* win, siRect r, siImage* img,
 	}
 }
 
-void siapp__cpuDrawImageLinear(siWindow* win, siRect r, siImage* img,
-								 siVec4 tint) {
+void siapp__cpuDrawImageLinear(siWindow* win, siVec4 r, siImage* img, siVec4 tint) {
 	siTextureAtlas* atlas = img->atlas;
 
-	f32 scaleW = (img->size.width - 1) / (f32)r.width;
-	f32 scaleH = (img->size.height - 1) / (f32)r.height;
+	f32 scaleW = img->size.width  / r.z;
+	f32 scaleH = img->size.height / r.w;
 	f32 imgY = img->pos.cpu.y1;
 
-	for_range (y, r.y, r.y + r.height) {
-		SI_STOPIF(y > win->e.windowSize.height, break);
-		usize index = y * win->render.cpu.width + r.x * SI__CHANNEL_COUNT;
+	f32 newX = si_clampf(r.x, 0, win->e.windowSize.width);
+	f32 newY = si_clampf(r.y, 0, win->e.windowSize.width);
+
+	i32 x0 = si_round(newX);
+
+	for_range (y, newY, si_round(r.y + r.w)) {
+		usize index = si_round(y) * win->render.cpu.width + x0 * SI__CHANNEL_COUNT;
 		f32 imgIndexX = img->pos.cpu.x1;
 
-		for_range (x, r.x, r.x + r.width) {
-			SI_STOPIF(x > win->e.windowSize.width, break);
+		for_range (x, newX, si_round(r.x + r.z)) {
 			i32 x0 = (i32)imgIndexX;
 			i32 y0 = (i32)imgY * atlas->totalWidth;
 			i32 x1 = x0 + 1;
@@ -6147,34 +6152,25 @@ void siapp_drawImageF(siWindow* win, siVec4 rect, siImage img) {
 		}
 		case SI_RENDERING_CPU: {
 			siVec2 scale = win->scaleFactor;
-			siArea size = SI_AREA(rect.z * scale.x, rect.w * scale.y);
 			rect.x *= scale.x;
 			rect.y *= scale.y;
+			rect.z *= scale.x;
+			rect.w *= scale.y;
 
 
-			if (si_pointCmp(size, img.size)) {
+			if (img.size.width == rect.z && img.size.height == rect.w) {
 				siapp__cpuDrawImage(win, SI_POINT(rect.x, rect.y), &img, win->imageColor);
 				break;
 			}
 
 			switch (img.atlas->texID.cpu->resizeMethod) {
 				case SI_RESIZE_NEAREST: {
-					siapp__cpuDrawImageNearest(
-						win,
-						SI_RECT_A(rect.x, rect.y, size),
-						&img,
-						win->imageColor
-					);
+					siapp__cpuDrawImageNearest(win, rect, &img, win->imageColor);
 					break;
 				}
 
 				case SI_RESIZE_LINEAR: {
-					siapp__cpuDrawImageLinear(
-						win,
-						SI_RECT_A(rect.x, rect.y, size),
-						&img,
-						win->imageColor
-					);
+					siapp__cpuDrawImageLinear(win, rect, &img, win->imageColor);
 					break;
 				}
 			}
@@ -6305,10 +6301,10 @@ void siapp_drawPolygonF(siWindow* win, siVec4 rect, u32 sides, siColor color) {
 	siapp__addVertexesToCMD(gl, sides + half, sides);
 }
 
-f32 siapp_drawText(siWindow* win, cstring text, siFont* font, siPoint pos, u32 size) {
+siVec2 siapp_drawText(siWindow* win, cstring text, siFont* font, siPoint pos, u32 size) {
 	return siapp_drawTextF(win, text, font, SI_VEC2(pos.x, pos.y), size);
 }
-f32 siapp_drawTextF(siWindow* win, cstring text, siFont* font, siVec2 pos, u32 size) {
+siVec2 siapp_drawTextF(siWindow* win, cstring text, siFont* font, siVec2 pos, u32 size) {
 	SI_ASSERT_NOT_NULL(win);
 	SI_ASSERT((win->renderType & SI_RENDERING_BITS) == (font->sheet.base.atlas->render));
 
@@ -6321,7 +6317,11 @@ f32 siapp_drawTextF(siWindow* win, cstring text, siFont* font, siVec2 pos, u32 s
 		siUtf32Char x = si_utf8Decode(&text[index]);
 		switch (x.codepoint) {
 			case SI_UNICODE_INVALID:
-			case 0: return si_maxf(width, base.x);
+			case 0: {
+				base.x -= pos.x;
+				base.y -= pos.y;
+				return SI_VEC2(si_maxf(width, base.x), base.y + font->advance.newline * scaleFactor);
+			}
 
 			case ' ': {
 				base.x += font->advance.space * scaleFactor;
@@ -6349,76 +6349,154 @@ f32 siapp_drawTextF(siWindow* win, cstring text, siFont* font, siVec2 pos, u32 s
 		index += x.len;
 	}
 }
-f32 siapp_drawTextWithWrap(siWindow* win, cstring text, siFont* font, siPoint pos,
+siVec2 siapp_drawTextWithWrap(siWindow* win, cstring text, siFont* font, siPoint pos,
 		u32 size, i32 maxWidth) {
 	return siapp_drawTextWithWrapF(win, text, font, SI_VEC2(pos.x, pos.y), size, maxWidth);
 }
-f32 siapp_drawTextWithWrapF(siWindow* win, cstring text, siFont* font, siVec2 pos,
+
+
+#define siapp__drawChar() \
+	do { \
+		for_range (i, 0, chainLen) { \
+			glyph = &font->glyphs[maxChars[i]]; \
+			f32 advance = ((modes & SI_BIT(1)) == 0) \
+							? siapp_drawCharacterScale(win, font, glyph, base, size, scaleFactor) \
+							: siapp_drawCharacterItalicScale(win, font, glyph, base, size, scaleFactor); \
+			base.x += advance; \
+		} \
+		chainLen = 0; \
+		modes &= mask; \
+	} while (0)
+
+siVec2 siapp_drawTextWithWrapF(siWindow* win, cstring text, siFont* font, siVec2 pos,
 		u32 size, f32 maxWidth) {
 	SI_ASSERT_NOT_NULL(win);
 	SI_ASSERT((win->renderType & SI_RENDERING_BITS) == (font->sheet.base.atlas->render));
 
-	b16 italic = false;
-	b16 bold = false;
+	u32 mask = SI_BIT(0);
+	b32 modes = 0; /* NOTE(EimaMei): SI_BIT(0) - underline, SI_BIT(1) - italic. */
 	f32 scaleFactor = (f32)size / font->size;
+	siVec2 underlineStart;
 	siVec2 base = pos;
 	f32 width = 0;
 	usize index = 0;
+	siUtf32Char x;
+	f32 startBaseX;
+	siGlyphInfo* glyph;
+	usize chainLen;
+	u32 maxChars[256];
 
+	chainLen = 0;
+	startBaseX = base.x;
+
+	/* NOTE(EimaMei): Put the '%' stuff somewhere else possibly. */
 	while (true) {
-		siUtf32Char x = si_utf8Decode(&text[index]);
+		if (base.x > maxWidth) {
+			width = si_maxf(width, startBaseX - pos.x);
+			base.x = pos.x;
+			base.y += font->advance.newline * scaleFactor;
+
+			if (modes & SI_BIT(0)) {// && x.codepoint != '%') {
+				siVec2 start = underlineStart;
+				f32 height = size / 11.25f;
+
+				siapp_drawRectF(
+					win,
+					SI_VEC4(start.x, start.y + font->advance.newline * scaleFactor - 2 * height, startBaseX - start.x - font->advance.space * scaleFactor, height),
+					SI_RGB(255, 255, 255)
+				);
+
+				underlineStart = base;
+			}
+
+			siapp__drawChar();
+			startBaseX = base.x;
+		}
+
+		x = si_utf8Decode(&text[index]);
 		switch (x.codepoint) {
 			case SI_UNICODE_INVALID:
-			case 0: return si_maxf(width, base.x);
-
+			case 0: {
+				base.x = startBaseX;
+				siapp__drawChar();
+				base.x -= pos.x;
+				base.y -= pos.y;
+				return SI_VEC2(si_maxf(width, base.x), base.y + font->advance.newline * scaleFactor);
+			}
 			case ' ': {
+				base.x = startBaseX;
+				siapp__drawChar();
 				base.x += font->advance.space * scaleFactor;
+				startBaseX = base.x;
 				index += 1;
-				siapp__drawTextWrapped(win, text, font, pos.x, size, maxWidth, scaleFactor, &base, &width, &index);
 				continue;
 			}
 			case '\t': {
+				base.x = startBaseX;
+				siapp__drawChar();
 				base.x += font->advance.tab * scaleFactor;
 				index += 1;
 				continue;
 			}
 			case '\r':
 			case '\n': {
-				width = si_maxf(width, base.x);
+				base.x = startBaseX;
+				siapp__drawChar();
+
+				width = si_maxf(width, base.x - pos.x);
 				base.x = pos.x;
 				base.y += font->advance.newline * scaleFactor;
 				index += 1;
+				startBaseX = base.x;
 				continue;
-			}
-
+			 }
 			case '%': {
-				index += 1;
-				switch (text[index]) {
-					case '%': continue;
-					case '_': italic = true; continue;
+				switch (text[index + 1]) {
+					case '%': index += 1; break;
+					case '*': {
+						modes |= SI_BIT(1);
+						mask ^= SI_BIT(1);
+						index += 2;
+						continue;
+					}
+					case '_': {
+						if ((modes & SI_BIT(0)) == 0) {
+							modes |= SI_BIT(0);
+							underlineStart = base;
+						}
+						else {
+							modes &= ~SI_BIT(0);
+							siVec2 start = underlineStart;
+							f32 height = size / 11.25f;
+							siapp_drawRectF(
+								win,
+								SI_VEC4(start.x, start.y + font->advance.newline * scaleFactor - 2 * height, base.x - start.x, height),
+								SI_RGB(255, 255, 255)
+							);
+						}
+						index += 2;
+						continue;
+					}
 				}
 				break;
 			}
 		}
 
-		if (base.x > maxWidth) {
-			width = maxWidth;
-			base.x = pos.x;
-			base.y += font->advance.newline * scaleFactor;
+		if (chainLen > countof(maxChars) - 1) {
+			SI_PANIC();
 		}
 
-		siGlyphInfo* glyph = siapp_fontGlyphFind(font, x.codepoint);
-		f32 advance = siapp_drawCharacterScale(win, font, glyph, base, size, scaleFactor);
-		base.x += advance;
+		glyph = siapp_fontGlyphFind(font, x.codepoint);
+		maxChars[chainLen] = glyph - font->glyphs;
+		base.x += glyph->advanceX * scaleFactor;
 		index += x.len;
-
+		chainLen += 1;
 	}
 }
 
-f32 siapp_drawCharacterScale(siWindow* win, const siFont* font, const siGlyphInfo* character,
+f32 siapp_drawCharacterScale(siWindow* win, const siFont* font, const siGlyphInfo* glyph,
 		siVec2 pos, u32 size, f32 scaleFactor) {
 	SI_ASSERT_NOT_NULL(win);
-	const siGlyphInfo* glyph = character;
 
 	switch (win->renderType & SI_RENDERING_BITS) {
 		case SI_RENDERING_OPENGL: {
@@ -6466,7 +6544,7 @@ f32 siapp_drawCharacterScale(siWindow* win, const siFont* font, const siGlyphInf
 			img.size = SI_AREA(glyph->width, glyph->height);
 
 			siVec2 scale = win->scaleFactor;
-			siRect r = SI_RECT(
+			siVec4 r = SI_VEC4(
 				(pos.x + glyph->x * scaleFactor) * scale.x,
 				(pos.y + size + glyph->y * scaleFactor) * scale.y,
 				glyph->width * scaleFactor * scale.x,
@@ -6478,27 +6556,13 @@ f32 siapp_drawCharacterScale(siWindow* win, const siFont* font, const siGlyphInf
 				siapp__cpuDrawImage(win, SI_POINT(r.x, r.y), &img, win->textColor);
 				break;
 			}
-
 			switch (img.atlas->texID.cpu->resizeMethod) {
-				case SI_RESIZE_NEAREST: {
-					siapp__cpuDrawImageNearest(
-						win,
-						r,
-						&img,
-						win->textColor
-					);
+				case SI_RESIZE_NEAREST:
+					siapp__cpuDrawImageNearest(win, r, &img, win->textColor);
 					break;
-				}
-
-				case SI_RESIZE_LINEAR: {
-					siapp__cpuDrawImageLinear(
-						win,
-						r,
-						&img,
-						win->textColor
-					);
+				case SI_RESIZE_LINEAR:
+					siapp__cpuDrawImageLinear(win, r, &img, win->textColor);
 					break;
-				}
 			}
 			break;
 		}
@@ -6506,6 +6570,90 @@ f32 siapp_drawCharacterScale(siWindow* win, const siFont* font, const siGlyphInf
 
 	return glyph->advanceX * scaleFactor;
 }
+f32 siapp_drawCharacterItalicScale(siWindow* win, const siFont* font, const siGlyphInfo* character,
+		siVec2 pos, u32 size, f32 scaleFactor) {
+	SI_ASSERT_NOT_NULL(win);
+	const siGlyphInfo* glyph = character;
+
+	switch (win->renderType & SI_RENDERING_BITS) {
+		case SI_RENDERING_OPENGL: {
+			siWinRenderingCtxOpenGL* gl = &win->render.opengl;
+			SI_STOPIF(gl->vertexCounter + 4 > gl->maxVertexCount, siapp_windowRender(win));
+
+			siImage img = siapp_spriteSheetSpriteGet(font->sheet, glyph->texID);
+			siCoordsF32 tex = img.pos.gpu;
+
+			// TODO(EimaMei): Make this slightly faster. | SET
+			tex.x2 = tex.x1 + (glyph->width / img.atlas->totalWidth);
+			tex.y2 = tex.y1 + (glyph->height / img.atlas->texHeight);
+
+			f32 x = glyph->x * scaleFactor;
+			f32 y = glyph->y * scaleFactor;
+			f32 width = glyph->width * scaleFactor;
+			f32 height = glyph->height * scaleFactor;
+
+			f32 baseX = pos.x + x,
+				baseY = pos.y + y + size;
+			f32 shift = height * si_sin(SI_TO_RADIANS(14));
+
+			f32 x1 = i32ToNDCX(baseX + shift, gl->size.width);
+			f32 x2 = i32ToNDCX(baseX + shift + width, gl->size.width);
+			f32 x3 = i32ToNDCX(baseX + width, gl->size.width);
+			f32 x4 = i32ToNDCX(baseX, gl->size.width);
+			f32 y1 = i32ToNDCY(baseY, gl->size.height);
+			f32 y2 = i32ToNDCY(baseY + height, gl->size.height);
+
+			{
+				siVec4 clr = win->textColor;
+				siapp_color4f(win, clr.x, clr.y, clr.z, clr.w);
+
+				siapp_texCoords2f(win, tex.x1, tex.y1); siapp_drawVertex2f(win, x1, y1);
+				siapp_texCoords2f(win, tex.x2, tex.y1); siapp_drawVertex2f(win, x2, y1);
+				siapp_texCoords2f(win, tex.x2, tex.y2); siapp_drawVertex2f(win, x3, y2);
+				siapp_texCoords2f(win, tex.x1, tex.y2); siapp_drawVertex2f(win, x4, y2);
+				siapp_texCoords2f(win, 0, 0);
+
+				gl->curTex = &img;
+				siapp__addVertexesToCMD(gl, 6, 4);
+				gl->curTex = &gl->defaultTex;
+
+				return (glyph->advanceX) * scaleFactor + shift / 8;
+			}
+			break;
+		}
+		case SI_RENDERING_CPU: {
+			/* TODO(EimaMei): Add italic support here. */
+			siImage img = siapp_spriteSheetSpriteGet(font->sheet, glyph->texID);
+			img.size = SI_AREA(glyph->width, glyph->height);
+
+			siVec2 scale = win->scaleFactor;
+			siVec4 r = SI_VEC4(
+				(pos.x + glyph->x * scaleFactor) * scale.x,
+				(pos.y + size + glyph->y * scaleFactor) * scale.y,
+				glyph->width * scaleFactor * scale.x,
+				glyph->height * scaleFactor * scale.y
+			);
+			size *= scaleFactor;
+
+			if (size == font->size && scale.x == 1 && scale.y == 1) {
+				siapp__cpuDrawImage(win, SI_POINT(r.x, r.y), &img, win->textColor);
+				break;
+			}
+			switch (img.atlas->texID.cpu->resizeMethod) {
+				case SI_RESIZE_NEAREST:
+					siapp__cpuDrawImageNearest(win, r, &img, win->textColor);
+					break;
+				case SI_RESIZE_LINEAR:
+					siapp__cpuDrawImageLinear(win, r, &img, win->textColor);
+					break;
+			}
+			break;
+		}
+	}
+
+	return glyph->advanceX * scaleFactor;
+}
+
 
 void siapp_color3f(siWindow* win, f32 r, f32 g, f32 b) {
 	SI_ASSERT_NOT_NULL(win);

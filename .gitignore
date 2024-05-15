@@ -18,3 +18,4 @@ Dockerfile
 *.png
 build/**
 test
+languages/*.sfg
