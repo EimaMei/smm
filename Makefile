@@ -40,7 +40,7 @@ ifeq ($(MAC_GEN_APP), true)
 	make generateApp
 	open $(OUTPUT)/$(NAME).app
 else
-	./$(EXE)
+	./$(EXE) --render="opengl" --language="0"
 endif
 
 # Clean the 'build' folder.

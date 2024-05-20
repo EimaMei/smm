@@ -25,6 +25,7 @@ typedef SI_ENUM(b32, ummPlatform) {
 typedef struct {
 	siColor primary;
 	siColor secondary;
+	siColor tertiary;
 	siColor accent;
 } ummColorScheme;
 
@@ -33,7 +34,7 @@ typedef struct {
 	ummColorScheme text;
 } ummColorPalette;
 
-#define UMM_COLOR_SCHEME(primary, secondary, accent) ((ummColorScheme){primary, secondary, accent})
+#define UMM_COLOR_SCHEME(primary, secondary, tertiary, accent) ((ummColorScheme){primary, secondary, tertiary, accent})
 
 typedef struct {
 	char* welcome;
@@ -49,6 +50,7 @@ typedef struct {
 typedef struct {
     siWindow* win;
 
+	u32 renderer;
 	ummLanguageID langID;
     struct {
         siSiliStr base;
